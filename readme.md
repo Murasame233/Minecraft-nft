@@ -1,6 +1,10 @@
 # Intro
 This project can let user make NFT on minecraft server.
 
+# Video Demo 
+Google Drive: https://drive.google.com/file/d/1yGOCCTYb7l0n6MBRMu-KML0ViaR_w6Wy/view?usp=sharing
+forgive me the record quility.
+
 # Folder
 - `java` java extension based on paper mc
 - `minecraft-nft` smart contract
