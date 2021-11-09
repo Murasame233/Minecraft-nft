@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Base64;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
@@ -93,6 +94,7 @@ class mintThread extends Thread {
                 }
                 ItemStack i = m.item;
                 String itemString = i.serialize().toString();
+                itemString = Base64.getEncoder().encodeToString(itemString.getBytes());
                 ProcessBuilder p = new ProcessBuilder().command("/bin/sh", "-i", "-c", "\"$(terrad tx wasm instantiate 1 '{\"equip\":\"" + itemString + "\"}' --from test1 --chain-id=localterra --fees=10000uluna --gas=auto --broadcast-mode=block -y)\"");
                 Process proc = p.start();
                 BufferedReader stdInput = new BufferedReader(new
