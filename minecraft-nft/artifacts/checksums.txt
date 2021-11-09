@@ -1,0 +1,1 @@
+ded28c685338366d17ee25ea1ed926c6968b952df66202c0a0bb9fb885e8e466  minecraft_nft.wasm

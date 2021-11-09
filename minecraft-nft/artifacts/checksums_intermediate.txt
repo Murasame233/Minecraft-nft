@@ -1,0 +1,1 @@
+8fd89e8ea7558b31ebf67790db74fa7a6af31624a0d3976cb421bb2978339565  ./target/wasm32-unknown-unknown/release/minecraft_nft.wasm

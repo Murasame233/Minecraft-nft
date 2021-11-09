@@ -1,0 +1,11 @@
+name: Minecraft-NFT
+version: '${project.version}'
+main: minecraftnftterra.plugin.Plugin
+api-version: 1.17
+author: Murasame
+description: "A Minecraft plugin can let you mint your equipment to nft."
+
+commands:
+  check:
+    description: Check the item on your right hand if it can be minted to NFT.
+    usage: /<command>
