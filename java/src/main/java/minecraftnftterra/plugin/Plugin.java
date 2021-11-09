@@ -84,7 +84,7 @@ class mintThread extends Thread {
                 }
                 ItemStack i = m.getItem();
                 String itemString = i.serialize().toString();
-                ProcessBuilder p = new ProcessBuilder().command("/bin/sh", "-i", "-c", "\"$(/Users/cunyu/Dev/terra/terrad/terrad tx wasm instantiate 1 '{\"equip\":\"" + itemString + "\"}' --from test1 --chain-id=localterra --fees=10000uluna --gas=auto --broadcast-mode=block -y)\"");
+                ProcessBuilder p = new ProcessBuilder().command("/bin/sh", "-i", "-c", "\"$(terrad tx wasm instantiate 1 '{\"equip\":\"" + itemString + "\"}' --from test1 --chain-id=localterra --fees=10000uluna --gas=auto --broadcast-mode=block -y)\"");
                 Process proc = p.start();
                 BufferedReader stdInput = new BufferedReader(new
                         InputStreamReader(proc.getErrorStream()));
