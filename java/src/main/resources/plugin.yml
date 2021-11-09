@@ -9,3 +9,7 @@ commands:
   check:
     description: Check the item on your right hand if it can be minted to NFT.
     usage: /<command>
+
+  mint:
+    description: min the item on your right hand if it can be minted to NFT.
+    usage: /<command>

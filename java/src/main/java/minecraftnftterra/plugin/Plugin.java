@@ -1,6 +1,8 @@
 package minecraftnftterra.plugin;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,23 +17,28 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public final class Plugin extends JavaPlugin {
     public LinkedBlockingQueue<Msg> MintQueue;
-    public Queue<String> AddressQueue;
+    public Queue<Msg> AddressQueue;
     Thread thread;
 
     @Override
     public void onEnable() {
         // Plugin startup login
         this.MintQueue = new LinkedBlockingQueue<>();
-        this.thread = new mintThread(this, this.MintQueue);
+        this.AddressQueue = new LinkedList<>();
+
+        this.thread = new mintThread(this, this.MintQueue, this.AddressQueue);
         this.thread.start();
-//        getServer().getScheduler().runTaskTimer(this,new checkTask(this.AddressQueue),20,20);
-        Objects.requireNonNull(getCommand("check")).setExecutor(new EquipCheck(this));
+        getServer().getScheduler().runTaskTimer(this, new checkTask(this.AddressQueue), 20, 20);
+        EquipCheck e = new EquipCheck(this);
+        Objects.requireNonNull(getCommand("check")).setExecutor(e);
+        Objects.requireNonNull(getCommand("mint")).setExecutor(e);
     }
 
     @Override
@@ -47,32 +54,34 @@ public final class Plugin extends JavaPlugin {
 
 class Msg {
     boolean close = false;
-    ItemStack item;
+    public ItemStack item;
+    public Player player;
+    public String S;
 
     public Msg(boolean close) {
         this.close = close;
     }
 
-    public Msg(ItemStack item) {
+    public Msg(ItemStack item, Player player) {
         this.item = item;
+        this.player = player;
     }
 
     public boolean isClose() {
         return close;
     }
 
-    public ItemStack getItem() {
-        return item;
-    }
 }
 
 class mintThread extends Thread {
     JavaPlugin plugin;
     LinkedBlockingQueue<Msg> queue;
+    Queue<Msg> AddressQueue;
 
-    public mintThread(JavaPlugin plugin, LinkedBlockingQueue<Msg> queue) {
+    public mintThread(JavaPlugin plugin, LinkedBlockingQueue<Msg> queue, Queue<Msg> AddressQueue) {
         this.plugin = plugin;
         this.queue = queue;
+        this.AddressQueue = AddressQueue;
     }
 
     public void run() {
@@ -82,7 +91,7 @@ class mintThread extends Thread {
                 if (m.isClose()) {
                     break;
                 }
-                ItemStack i = m.getItem();
+                ItemStack i = m.item;
                 String itemString = i.serialize().toString();
                 ProcessBuilder p = new ProcessBuilder().command("/bin/sh", "-i", "-c", "\"$(terrad tx wasm instantiate 1 '{\"equip\":\"" + itemString + "\"}' --from test1 --chain-id=localterra --fees=10000uluna --gas=auto --broadcast-mode=block -y)\"");
                 Process proc = p.start();
@@ -96,6 +105,8 @@ class mintThread extends Thread {
                     }
                 }
                 s = stdInput.readLine().split(": ")[1];
+                m.S = s;
+                this.AddressQueue.add(m);
 
             } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
@@ -104,16 +115,25 @@ class mintThread extends Thread {
     }
 }
 
-//class checkTask implements  Runnable{
-//    Queue<String> addressQueue
-//    public checkTask(Queue<String> q){
-//        n
-//    }
-//    @Override
-//    public void run() {
-//
-//    }
-//}
+class checkTask implements Runnable {
+    Queue<Msg> addressQueue;
+
+    public checkTask(Queue<Msg> q) {
+        this.addressQueue = q;
+    }
+
+    @Override
+    public void run() {
+        if (!this.addressQueue.isEmpty()) {
+            Msg m = this.addressQueue.poll();
+            PlayerInventory inventory = m.player.getInventory();
+            m.player.sendMessage(Component.text("Click this to copy contract address").color(TextColor.color(240,128,128)).clickEvent(ClickEvent.copyToClipboard(m.S)));
+            m.player.sendMessage("And this item is unbreakable now!");
+            inventory.addItem(m.item);
+        }
+    }
+}
+
 class EquipCheck implements CommandExecutor {
     Plugin plugin;
 
@@ -155,7 +175,7 @@ class EquipCheck implements CommandExecutor {
         item.setItemMeta(meta);
         // Put Item to mint queue
         try {
-            this.plugin.MintQueue.put(new Msg(item));
+            this.plugin.MintQueue.put(new Msg(item, player));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
